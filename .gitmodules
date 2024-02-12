@@ -1,0 +1,6 @@
+[submodule "eigen"]
+	path = eigen
+	url = https://gitlab.com/libeigen/eigen/
+[submodule "taskflow"]
+	path = taskflow
+	url = https://github.com/taskflow/taskflow
