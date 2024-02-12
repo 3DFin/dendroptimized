@@ -139,8 +139,8 @@ static std::tuple<py::array_t<real_t>, py::array_t<uint64_t>, py::array_t<uint64
     // The coordinate minima
     const auto start_total = std::chrono::high_resolution_clock::now();
 
-    std::cout << "-Voxelization " << std::endl;
-    std::cout << "  Voxel resolution " << res_xy << " x " << res_xy << " x " << res_z << std::endl;
+    py::print("-Voxelization ");
+    py::print("  Voxel resolution ", res_xy, " x ", res_xy, " x ", res_z);
 
     tf::Executor executor;
     tf::Taskflow tf;
@@ -326,32 +326,23 @@ static std::tuple<py::array_t<real_t>, py::array_t<uint64_t>, py::array_t<uint64
     executor.run(tf).wait();
 
     // output
-    std::cout << "  Hashing Time "
-              << std::chrono::duration_cast<std::chrono::milliseconds>(stop_hashing - start_hashing).count() << "ms"
-              << std::endl;
+    py::print(
+        "  Hashing Time ", std::chrono::duration_cast<std::chrono::milliseconds>(stop_hashing - start_hashing).count(),
+        "ms");
 
-    std::cout << "  Sorting Time "
-              << std::chrono::duration_cast<std::chrono::milliseconds>(stop_sorting - start_sorting).count() << "ms"
-              << std::endl;
+    py::print(
+        "  Sorting Time ", std::chrono::duration_cast<std::chrono::milliseconds>(stop_sorting - start_sorting).count(),
+        "ms");
 
-    std::cout << "  Grouping Time "
-              << std::chrono::duration_cast<std::chrono::milliseconds>(stop_grouping - start_grouping).count() << "ms"
-              << std::endl;
+    py::print("  Grouping Time ", std::chrono::duration_cast<std::chrono::milliseconds>(stop_grouping - start_grouping).count(), "ms");
 
-    std::cout << "  Voxelization Time "
-              << std::chrono::duration_cast<std::chrono::milliseconds>(stop_voxelization - start_voxelization).count()
-              << "ms" << std::endl;
+    py::print("  Voxelization Time ", std::chrono::duration_cast<std::chrono::milliseconds>(stop_voxelization - start_voxelization).count(), "ms");
 
-    std::cout << "  Total Time "
-              << std::chrono::duration_cast<std::chrono::milliseconds>(
-                     std::chrono::high_resolution_clock::now() - start_total)
-                     .count()
-              << "ms" << std::endl;
+    py::print("  Total Time ", std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start_total).count(), "ms");
 
-    std::cout << "  Number of voxels " << vox_pc.rows() << std::endl;
+    py::print("  Number of voxels ", vox_pc.rows());
 
-    std::cout << "  Voxels account for " << vox_pc.rows() * 100 / static_cast<double>(num_points)
-              << "% of original points" << std::endl;
+    py::print("  Voxels account for ", vox_pc.rows() * 100 / static_cast<double>(num_points), "% of original points");
 
     return std::make_tuple(
         py::array_t<real_t>(std::vector<ptrdiff_t>{static_cast<py::ssize_t>(vox_pc.rows()), 3}, vox_pc.data()),
