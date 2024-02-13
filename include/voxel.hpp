@@ -139,8 +139,8 @@ static std::tuple<py::array_t<real_t>, py::array_t<uint64_t>, py::array_t<uint64
     // The coordinate minima
     const auto start_total = std::chrono::high_resolution_clock::now();
 
-    py::print("-Voxelization ");
-    py::print("  Voxel resolution ", res_xy, " x ", res_xy, " x ", res_z);
+    py::print("-Voxelization \n";
+    "  Voxel resolution ", res_xy, " x ", res_xy, " x ", res_z);
 
     tf::Executor executor;
     tf::Taskflow tf;
@@ -328,21 +328,19 @@ static std::tuple<py::array_t<real_t>, py::array_t<uint64_t>, py::array_t<uint64
     // output
     py::print(
         "  Hashing Time ", std::chrono::duration_cast<std::chrono::milliseconds>(stop_hashing - start_hashing).count(),
-        "ms");
-
-    py::print(
+        "ms\n",
         "  Sorting Time ", std::chrono::duration_cast<std::chrono::milliseconds>(stop_sorting - start_sorting).count(),
-        "ms");
-
-    py::print("  Grouping Time ", std::chrono::duration_cast<std::chrono::milliseconds>(stop_grouping - start_grouping).count(), "ms");
-
-    py::print("  Voxelization Time ", std::chrono::duration_cast<std::chrono::milliseconds>(stop_voxelization - start_voxelization).count(), "ms");
-
-    py::print("  Total Time ", std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start_total).count(), "ms");
-
-    py::print("  Number of voxels ", vox_pc.rows());
-
-    py::print("  Voxels account for ", vox_pc.rows() * 100 / static_cast<double>(num_points), "% of original points");
+        "ms\n",
+        "  Grouping Time ",
+        std::chrono::duration_cast<std::chrono::milliseconds>(stop_grouping - start_grouping).count(), "ms\n",
+        "  Voxelization Time ",
+        std::chrono::duration_cast<std::chrono::milliseconds>(stop_voxelization - start_voxelization).count(), "ms\n",
+        "  Total Time ",
+        std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start_total)
+            .count(),
+        "ms\n",
+        "  Number of voxels ", vox_pc.rows(), "\n",
+        "  Voxels account for ", vox_pc.rows() * 100 / static_cast<double>(num_points), "% of original points");
 
     return std::make_tuple(
         py::array_t<real_t>(std::vector<ptrdiff_t>{static_cast<py::ssize_t>(vox_pc.rows()), 3}, vox_pc.data()),
