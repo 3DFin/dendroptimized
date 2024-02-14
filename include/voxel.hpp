@@ -144,7 +144,7 @@ static std::tuple<py::array_t<real_t>, py::array_t<uint64_t>, py::array_t<uint64
     // The coordinate minima
     const auto start_total = std::chrono::high_resolution_clock::now();
 
-    py::print("-Voxelization \n", "  Voxel resolution ", res_xy, " x ", res_xy, " x ", res_z);
+    py::print("-Voxelization\n", " Voxel resolution ", res_xy, "x", res_xy, "x", res_z);
 
     tf::Executor executor;
     tf::Taskflow tf;
@@ -173,8 +173,8 @@ static std::tuple<py::array_t<real_t>, py::array_t<uint64_t>, py::array_t<uint64
     // Lambda to compute voxel hashing
     const auto create_hash = [&](const Vec3<real_t>& point) -> uint64_t
     {
-        return (static_cast<uint64_t>(std::floor((point(id_z) - min_vec(id_z)) / res_z)) << two_voxel_bits) +
-               (static_cast<uint64_t>(std::floor((point(id_y) - min_vec(id_y)) / res_xy)) << voxel_bits) +
+        return ((static_cast<uint64_t>(std::floor((point(id_z) - min_vec(id_z)) / res_z)) << two_voxel_bits) |
+               (static_cast<uint64_t>(std::floor((point(id_y) - min_vec(id_y)) / res_xy)) << voxel_bits)) |
                static_cast<uint64_t>(std::floor((point(id_x) - min_vec(id_x)) / res_xy));
     };
 
@@ -253,7 +253,7 @@ static std::tuple<py::array_t<real_t>, py::array_t<uint64_t>, py::array_t<uint64
             vox_to_cloud_ind = VecIndex<uint32_t>(first_point_in_vox.back());
         });
 
-    // precomputed shifts each dimensional composant from a full hashed code
+    // Precomputed shifts for each dimensional composant of a full hashed code
     const real_t centroid_shift_x = min_vec(0) + res_xy / real_t(2.0);
     const real_t centroid_shift_y = min_vec(1) + res_xy / real_t(2.0);
     const real_t centroid_shift_z = min_vec(2) + res_z / real_t(2.0);
@@ -275,10 +275,9 @@ static std::tuple<py::array_t<real_t>, py::array_t<uint64_t>, py::array_t<uint64
                                      const uint64_t y_code_val = (hash_val >> voxel_bits) & num_cells;
                                      const uint64_t x_code_val = hash_val & num_cells;
 
-                                     vox_pc.row(voxel_id) = Vec3<real_t>(
-                                         x_code_val * res_xy + centroid_shift_x, y_code_val * res_xy + centroid_shift_y,
-                                         z_code_val * res_z + centroid_shift_z);
-                                     vox_to_cloud_ind(voxel_id) = static_cast<uint32_t>(real_point_id);
+                                     vox_pc(voxel_id, 0) = x_code_val * res_xy + centroid_shift_x;
+                                     vox_pc(voxel_id, 1) = y_code_val * res_xy + centroid_shift_y;
+                                     vox_pc(voxel_id, 2) = z_code_val * res_z + centroid_shift_z;
                                  }
                              })
                            .name("fill_vox_pc");
@@ -304,20 +303,28 @@ static std::tuple<py::array_t<real_t>, py::array_t<uint64_t>, py::array_t<uint64
     // Launch tasks
     executor.run(tf).wait();
 
+    std::stringstream log;
+
+    log << "  Hashing in "
+        << std::chrono::duration_cast<std::chrono::milliseconds>(stop_hashing - start_hashing).count() << "ms\n"
+        << "  Sorting in "
+        << std::chrono::duration_cast<std::chrono::milliseconds>(stop_sorting - start_sorting).count() << "ms\n"
+        << "  Grouping in "
+        << std::chrono::duration_cast<std::chrono::milliseconds>(stop_grouping - start_grouping).count() << "ms\n"
+        << "  Voxelization in "
+        << std::chrono::duration_cast<std::chrono::milliseconds>(stop_voxelization - start_voxelization).count()
+        << "ms\n"
+        << "  Total time "
+        << std::chrono::duration_cast<std::chrono::milliseconds>(
+               std::chrono::high_resolution_clock::now() - start_total)
+               .count()
+        << "ms\n"
+        << std::setprecision(3) << std::fixed << "  " << num_points / 1.0e6 << " million points -> "
+        << vox_pc.rows() / 1.0e6 << " millions voxels\n"
+        << "  Voxels account for " << vox_pc.rows() * 100 / static_cast<double>(num_points) << "% of original points";
+
     // output
-    py::print(
-        "  Hashing Time ", std::chrono::duration_cast<std::chrono::milliseconds>(stop_hashing - start_hashing).count(),
-        "ms\n", "  Sorting Time ",
-        std::chrono::duration_cast<std::chrono::milliseconds>(stop_sorting - start_sorting).count(), "ms\n",
-        "  Grouping Time ",
-        std::chrono::duration_cast<std::chrono::milliseconds>(stop_grouping - start_grouping).count(), "ms\n",
-        "  Voxelization Time ",
-        std::chrono::duration_cast<std::chrono::milliseconds>(stop_voxelization - start_voxelization).count(), "ms\n",
-        "  Total Time ",
-        std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start_total)
-            .count(),
-        "ms\n", "  Number of voxels ", vox_pc.rows(), "\n", "  Voxels account for ",
-        vox_pc.rows() * 100 / static_cast<double>(num_points), "% of original points");
+    py::print(log.str());
 
     return std::make_tuple(
         py::array_t<real_t>(std::vector<ptrdiff_t>{static_cast<py::ssize_t>(vox_pc.rows()), 3}, vox_pc.data()),
