@@ -35,7 +35,7 @@ static std::tuple<PointCloud<real_t>, VecIndex<uint32_t>, VecIndex<uint32_t>> vo
     // The coordinate minima
     const auto start_total = std::chrono::high_resolution_clock::now();
 
-    nb::print(nb::str("-Voxelization\n Voxel resolution {}x{}x{}").format(res_xy, res_xy, res_z));
+    nb::print(nb::str("-Voxelization\n Voxel resolution: {} x {} x {} m").format(res_xy, res_xy, res_z));
 
     tf::Executor executor;
     tf::Taskflow tf;
@@ -116,7 +116,7 @@ static std::tuple<PointCloud<real_t>, VecIndex<uint32_t>, VecIndex<uint32_t>> vo
     auto sort_indices = tf.sort(
                               std::cref(first_it_indices), std::cref(end_it_indices),
                               [&](const Eigen::Index a, Eigen::Index b) { return hashes[a] < hashes[b]; })
-                            .name("sort_indices");
+                            .name("sort_indices");  // note this is not a stable sort
 
     // In the sorted index find first representent one voxel cell
     auto unique = tf.for_each_index(
@@ -160,7 +160,8 @@ static std::tuple<PointCloud<real_t>, VecIndex<uint32_t>, VecIndex<uint32_t>> vo
                                  //  maybe it could be better to init. it in the allocation tasks
                                  if (point_id == 0 || voxel_id != first_point_in_vox[point_id - 1] - 1)
                                  {
-                                     const uint64_t hash_val = hashes[real_point_id];
+                                     vox_to_cloud_ind(voxel_id) = real_point_id;
+                                     const uint64_t hash_val    = hashes[real_point_id];
 
                                      const uint64_t z_code_val = hash_val >> two_voxel_bits;
                                      const uint64_t y_code_val = (hash_val >> voxel_bits) & num_cells;
@@ -197,19 +198,19 @@ static std::tuple<PointCloud<real_t>, VecIndex<uint32_t>, VecIndex<uint32_t>> vo
     std::stringstream log;
 
     log << "  Hashing in "
-        << std::chrono::duration_cast<std::chrono::milliseconds>(stop_hashing - start_hashing).count() << "ms\n"
+        << std::chrono::duration_cast<std::chrono::milliseconds>(stop_hashing - start_hashing).count() << " ms\n"
         << "  Sorting in "
-        << std::chrono::duration_cast<std::chrono::milliseconds>(stop_sorting - start_sorting).count() << "ms\n"
+        << std::chrono::duration_cast<std::chrono::milliseconds>(stop_sorting - start_sorting).count() << " ms\n"
         << "  Grouping in "
-        << std::chrono::duration_cast<std::chrono::milliseconds>(stop_grouping - start_grouping).count() << "ms\n"
+        << std::chrono::duration_cast<std::chrono::milliseconds>(stop_grouping - start_grouping).count() << " ms\n"
         << "  Voxelization in "
         << std::chrono::duration_cast<std::chrono::milliseconds>(stop_voxelization - start_voxelization).count()
-        << "ms\n"
+        << " ms\n"
         << "  Total time "
         << std::chrono::duration_cast<std::chrono::milliseconds>(
                std::chrono::high_resolution_clock::now() - start_total)
                .count()
-        << "ms\n"
+        << " ms\n"
         << std::setprecision(3) << std::fixed << "  " << num_points / 1.0e6 << " million points -> "
         << vox_pc.rows() / 1.0e6 << " millions voxels\n"
         << "  Voxels account for " << vox_pc.rows() * 100 / static_cast<double>(num_points) << "% of original points";
