@@ -20,6 +20,23 @@ classifiers = [
   "Topic :: Scientific/Engineering"
 ]
 
+[tool.scikit-build]
+# Protect the configuration against future changes in scikit-build-core
+minimum-version = "0.4"
+# Setuptools-style build caching in a local directory
+build-dir = "build/{wheel_tag}"
+cmake.build-type = "Release"
+
+sdist.exclude = [
+  "third_party/taskflow/3rd-party", 
+  "third_party/taskflow/docs",
+  "third_party/taskflow/doxygen",
+  "third_party/taskflow/benchmarks",
+  "third_party/eigen/demos",
+  "third_party/eigen/doc",
+  "third_party/eigen/bench",
+] # make sdist a lot lighter
+
 [tool.tox]
 legacy_tox_ini = """
 [tox]

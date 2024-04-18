@@ -23,7 +23,7 @@ namespace dendroptimized
 
 // low level version with Taskflow
 template <typename real_t>
-static std::tuple<PointCloud<real_t>, VecIndex<uint32_t>, VecIndex<uint32_t>> voxelate_ll(
+static std::tuple<PointCloud<real_t>, VecIndex<uint32_t>, VecIndex<uint32_t>> voxelize(
     DRefMatrixCloud<real_t> xyz, const real_t res_xy, const real_t res_z, const uint32_t n_digits, const uint32_t id_x,
     const uint32_t id_y, const uint32_t id_z)
 {
