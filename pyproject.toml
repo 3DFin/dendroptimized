@@ -1,6 +1,6 @@
 [build-system]
-requires = ["setuptools>=42", "wheel", "pybind11~=2.11"]
-build-backend = "setuptools.build_meta"
+requires = ["scikit-build-core >=0.4.3", "nanobind >= 1.9.2"]
+build-backend = "scikit_build_core.build"
 
 [project]
 name = "dendroptimized"
@@ -23,7 +23,6 @@ classifiers = [
 [tool.tox]
 legacy_tox_ini = """
 [tox]
-envlist = py{310}
 
 [gh-actions]
 python =
@@ -47,3 +46,8 @@ repository = "https://github.com/3DFin/dendroptimized"
 
 [tool.cibuildwheel]
 build = "cp3{9,10,11,12}-*"
+archs = ["auto64"] # limit to 64bits builds
+
+# Needed for full C++17 support
+[tool.cibuildwheel.macos.environment]
+MACOSX_DEPLOYMENT_TARGET = "10.14"
