@@ -10,7 +10,7 @@ Available algorithms:
  
 To be added in a near future
  - C++ Parallel DBSCAN with voxelization prior
- - C++ Feature computation (A la jakteristics) (with nanoflann as NN library. this feature is already implemented but should be included in PGEOF)
+ - C++ Ad Hoc dist_axes computation
 
 ## License
 

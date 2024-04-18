@@ -7,7 +7,7 @@ name = "dendroptimized"
 version = "0.0.1"
 readme = "README.md"
 description = "Optimized C++ algorithms for dendromatics"
-requires-python = ">=3.9,<=3.12"
+requires-python = ">=3.9,<3.13"
 license = {file = "LICENSE"}
 authors = [
     { name = "Carlos Cabo", email = "carloscabo@uniovi.es" },
