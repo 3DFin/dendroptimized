@@ -1,7 +1,0 @@
-graft include
-graft eigen/Eigen
-include eigen/COPYING.*
-include eigen/README.md
-graft taskflow/taskflow
-include taskflow/README.md
-include taskflow/LICENSE 
