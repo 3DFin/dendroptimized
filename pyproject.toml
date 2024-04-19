@@ -57,7 +57,11 @@ changedir = tests
 deps =
   pytest >= 7.4
   dendromatics == 0.4.1
-commands = pytest --basetemp="{envtmpdir}" {posargs}
+  pytest-benchmark
+commands = pytest --basetemp="{envtmpdir}" --benchmark-skip {posargs}
+
+[testenv:bench]
+commands = pytest --basetemp="{envtmpdir}" --benchmark-only {posargs}
 """
 
 [project.urls]
