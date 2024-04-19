@@ -32,6 +32,9 @@ sdist.exclude = [
   "third_party/taskflow/docs",
   "third_party/taskflow/doxygen",
   "third_party/taskflow/benchmarks",
+  "third_party/taskflow/sandbox",
+  "third_party/taskflow/unittests",
+  "third_party/taskflow/examples",
   "third_party/eigen/demos",
   "third_party/eigen/doc",
   "third_party/eigen/bench",
@@ -54,7 +57,7 @@ changedir = tests
 deps =
   pytest >= 7.4
   dendromatics == 0.4.1
-commands = pytest -s --basetemp="{envtmpdir}" {posargs}
+commands = pytest --basetemp="{envtmpdir}" {posargs}
 """
 
 [project.urls]
