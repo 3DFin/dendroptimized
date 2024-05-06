@@ -28,17 +28,19 @@ build-dir = "build/{wheel_tag}"
 cmake.build-type = "Release"
 
 sdist.exclude = [
-  "third_party/taskflow/3rd-party", 
-  "third_party/taskflow/docs",
-  "third_party/taskflow/doxygen",
-  "third_party/taskflow/benchmarks",
-  "third_party/taskflow/sandbox",
-  "third_party/taskflow/unittests",
-  "third_party/taskflow/examples",
+  "third_party/eigen/bench",
   "third_party/eigen/demos",
   "third_party/eigen/doc",
-  "third_party/eigen/bench",
-] # make sdist a lot lighter
+  "third_party/taskflow/3rd-party", 
+  "third_party/taskflow/benchmarks",
+  "third_party/taskflow/docs",
+  "third_party/taskflow/doxygen", 
+  "third_party/taskflow/examples",
+  "third_party/taskflow/sandbox",
+  "third_party/taskflow/unittests",
+] 
+# make sdist a lot lighter by removing some useless files from third_party
+# ⚠️  be sure to keep copyrights and license files
 
 [tool.tox]
 legacy_tox_ini = """
