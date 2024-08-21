@@ -5,6 +5,7 @@
 #include <nanobind/nanobind.h>
 #include <nanobind/ndarray.h>
 #include <nanobind/stl/tuple.h>
+#include <nanobind/stl/variant.h>
 
 #include <Eigen/Dense>
 #include <chrono>
@@ -24,8 +25,8 @@ namespace dendroptimized
 // low level version with Taskflow
 template <typename real_t>
 static std::tuple<PointCloud<real_t>, VecIndex<uint32_t>, VecIndex<uint32_t>> voxelize(
-    DRefMatrixCloud<real_t> xyz, const real_t res_xy, const real_t res_z, const uint32_t n_digits, const uint32_t id_x,
-    const uint32_t id_y, const uint32_t id_z)
+    DRefMatrixCloud<real_t> xyz, const real_t res_xy, const real_t res_z, const uint32_t id_x, const uint32_t id_y,
+    const uint32_t id_z, const bool verbose)
 {
     // number of bit used to encode one dimension
     constexpr uint64_t voxel_bits     = 21;
@@ -35,7 +36,7 @@ static std::tuple<PointCloud<real_t>, VecIndex<uint32_t>, VecIndex<uint32_t>> vo
     // The coordinate minima
     const auto start_total = std::chrono::high_resolution_clock::now();
 
-    nb::print(nb::str("-Voxelization\n Voxel resolution: {} x {} x {} m").format(res_xy, res_xy, res_z));
+    if (verbose) nb::print(nb::str("-Voxelization\n Voxel resolution: {} x {} x {} m").format(res_xy, res_xy, res_z));
 
     tf::Executor executor;
     tf::Taskflow tf;
@@ -215,10 +216,27 @@ static std::tuple<PointCloud<real_t>, VecIndex<uint32_t>, VecIndex<uint32_t>> vo
         << vox_pc.rows() / 1.0e6 << " millions voxels\n"
         << "  Voxels account for " << vox_pc.rows() * 100 / static_cast<double>(num_points) << "% of original points";
 
-    // output
-    nb::print(log.str().c_str());
+    if (verbose) nb::print(log.str().c_str());
 
     return {vox_pc, cloud_to_vox_ind, vox_to_cloud_ind};
+}
+
+template <typename real_t>
+static std::variant<
+    std::tuple<PointCloud<real_t>, VecIndex<uint32_t>, VecIndex<uint32_t>>,
+    std::tuple<PointCloud<real_t>, VecIndex<uint32_t>, VecIndex<uint32_t>, VecIndex<uint32_t>>>
+    voxelize_stub(
+        DRefMatrixCloud<real_t> xyz, const real_t res_xy, const real_t res_z, const uint32_t n_digits, uint32_t id_x,
+        const uint32_t id_y, const uint32_t id_z, const bool with_n_points, const bool verbose)
+{
+    if (with_n_points)
+    {
+        VecIndex<uint32_t> num_pts;
+        auto               res = voxelize(xyz, res_xy, res_z, id_x, id_y, id_z, verbose);
+
+        return std::tuple_cat(res, std::tie(num_pts));
+    }
+    else { return voxelize(xyz, res_xy, res_z, id_x, id_y, id_z, verbose); }
 }
 
 }  // namespace dendroptimized
