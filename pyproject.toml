@@ -58,7 +58,7 @@ python =
 changedir = tests
 deps =
   pytest >= 7.4
-  dendromatics == 0.4.1
+  dendromatics == 0.5.1
   pytest-benchmark
 commands = pytest --basetemp="{envtmpdir}" --benchmark-skip {posargs}
 
