@@ -224,17 +224,22 @@ static std::tuple<PointCloud<real_t>, VecIndex<uint32_t>, VecIndex<uint32_t>> vo
 template <typename real_t>
 static std::variant<
     std::tuple<PointCloud<real_t>, VecIndex<uint32_t>, VecIndex<uint32_t>>,
-    std::tuple<PointCloud<real_t>, VecIndex<uint32_t>, VecIndex<uint32_t>, VecIndex<uint32_t>>>
-    voxelize_stub(
+    std::tuple<PointCloudAugmented<real_t>, VecIndex<uint32_t>, VecIndex<uint32_t>>>
+    voxelize_wrapper(
         DRefMatrixCloud<real_t> xyz, const real_t res_xy, const real_t res_z, const uint32_t n_digits, uint32_t id_x,
         const uint32_t id_y, const uint32_t id_z, const bool with_n_points, const bool verbose)
 {
     if (with_n_points)
     {
-        VecIndex<uint32_t> num_pts;
-        auto               res = voxelize(xyz, res_xy, res_z, id_x, id_y, id_z, verbose);
+        auto                        res               = voxelize(xyz, res_xy, res_z, id_x, id_y, id_z, verbose);
+        PointCloudAugmented<real_t> vox_cloud_num_pts = PointCloudAugmented<real_t>::Zero(std::get<2>(res).size(), 4);
 
-        return std::tuple_cat(res, std::tie(num_pts));
+        const auto& vox_cloud         = std::get<0>(res);
+        vox_cloud_num_pts.leftCols(3) = vox_cloud;
+        const auto& cloud_to_vox_id   = std::get<1>(res);
+        for (const auto vox_id : cloud_to_vox_id) { vox_cloud_num_pts(vox_id, 3)++; }
+
+        return std::make_tuple(vox_cloud_num_pts, cloud_to_vox_id, std::get<2>(res));
     }
     else { return voxelize(xyz, res_xy, res_z, id_x, id_y, id_z, verbose); }
 }
