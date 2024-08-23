@@ -1,4 +1,3 @@
-
 #pragma once
 
 #include <nanobind/eigen/dense.h>
