@@ -61,6 +61,7 @@ deps =
   pytest >= 7.4
   dendromatics == 0.5.1
   pytest-benchmark
+  dbscan
 commands = pytest --basetemp="{envtmpdir}" -s --benchmark-skip {posargs}
 
 [testenv:bench]

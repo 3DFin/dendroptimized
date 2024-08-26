@@ -1,5 +1,7 @@
 #pragma once
 
+#include <dset.h>
+
 #include <nanoflann.hpp>
 
 #include "types.hpp"
@@ -10,7 +12,7 @@ namespace dendroptimized
 {
 
 template <typename real_t>
-static void connected_components(RefCloud<real_t> xyz, const real_t eps_radius)
+static VecIndex<int32_t> connected_components(RefCloud<real_t> xyz, const real_t eps_radius, const uint32_t min_samples)
 {
     using kd_tree_t = nanoflann::KDTreeEigenMatrixAdaptor<RefCloud<real_t>, 3, nanoflann::metric_L2_Simple>;
 
@@ -18,13 +20,16 @@ static void connected_components(RefCloud<real_t> xyz, const real_t eps_radius)
     const real_t sq_search_radius = eps_radius * eps_radius;
 
     const Eigen::Index n_points = xyz.rows();
-    std::cout << n_points << std::endl;
-    std::cout << eps_radius << std::endl;
 
     tf::Executor                           executor;
     tf::Taskflow                           taskflow;
     std::vector<std::vector<Eigen::Index>> nn_cells;
     nn_cells.resize(n_points);
+    std::vector<bool> is_core;
+    is_core.resize(n_points);
+    uint32_t          count_core = 0;
+    VecIndex<int32_t> cluster_id(n_points);
+    cluster_id.fill(-1);
 
     taskflow.for_each_index(
         Eigen::Index(0), n_points, Eigen::Index(1),
@@ -44,20 +49,72 @@ static void connected_components(RefCloud<real_t> xyz, const real_t eps_radius)
                     "27-connectivity "
                     "context on regular voxels grids");
             }
-            std::vector<Eigen::Index> ids;
+
+            is_core[point_id] = num_found >= min_samples;  // we include the core sample itself
+            std::vector<Eigen::Index> nn_ids;
             std::transform(
-                result_set.begin(), result_set.end(), std::back_inserter(ids),
-                [&](const auto& result) { if(result.second != point_id) return result.second; });
-            nn_cells[point_id] = std::move(ids);
+                result_set.begin(), result_set.end(), std::back_inserter(nn_ids),
+                [&](const auto& result)
+                {
+                    if (result.first != point_id) return result.first;
+                });
+            nn_cells[point_id] = std::move(nn_ids);
         },
         tf::StaticPartitioner(0));
-    
-    // TODO: union find (parallel disjoint set)
-
-    // TODO: prune node with cluster < parameter size (to add in the signature)
-
-    // TODO : label other nodes.
-    // in our config border points should not exists, we should only have core points and noise points
     executor.run(taskflow).get();
+
+    for (const auto core_ok : is_core)
+    {
+        if (core_ok) ++count_core;
+    }
+    std::cout << "count core " << count_core << std::endl;
+    DisjointSets uf(count_core);
+
+    // TODO: union find (parallel disjoint set)
+    auto link_core = taskflow.for_each_index(
+        size_t(0), size_t(n_points), size_t(1),
+        [&](size_t curr_id)
+        {
+            if (!is_core[curr_id]) return;
+            for (const auto nn_id : nn_cells[curr_id])
+            {
+                if (is_core[nn_id] && curr_id > nn_id && !uf.same(curr_id, nn_id)) { uf.unite(curr_id, nn_id); }
+            }
+        });
+
+    auto label_core = taskflow.for_each_index(
+        size_t(0), size_t(n_points), size_t(1),
+        [&](size_t curr_id)
+        {
+            if (!is_core[curr_id]) return;
+            cluster_id[curr_id] = uf.find(curr_id);
+        });
+
+    // label other nodes.
+    // TODO : in our config border points should not exists, we should only have core points and noise points
+    // it should be easier to check for border points in the previous step.
+    auto label_border = taskflow.for_each_index(
+        size_t(0), size_t(n_points), size_t(1),
+        [&](size_t curr_id)
+        {
+            if (!is_core[curr_id])
+            {
+                for (const auto nn_id : nn_cells[curr_id])
+                {
+                    if (is_core[nn_id])
+                    {
+                        cluster_id[curr_id] = cluster_id[nn_id];
+                        break;
+                    }
+                }
+            }
+        });
+    label_core.succeed(link_core);
+    label_border.succeed(label_core);
+
+    executor.run(taskflow).get();
+
+    return cluster_id;
+    // TODO make this parallel (do not forget to move the executor)
 }
 }  // namespace dendroptimized

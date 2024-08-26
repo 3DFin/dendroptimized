@@ -23,6 +23,10 @@ nanobind_add_module(dendroptimized_ext NOMINSIZE STABLE_ABI LTO src/dendroptimiz
 # All libs are header only. 
 # it's faster to include like this than using exported targets 
 # (i.e add_subdirectories(...))
-target_include_directories(dendroptimized_ext PRIVATE "include" "third_party/eigen" "third_party/taskflow", "third_party/nanoflann/include") 
+target_include_directories(dendroptimized_ext PRIVATE "include" 
+  "third_party/eigen" 
+  "third_party/taskflow", 
+  "third_party/nanoflann/include", 
+  "third_party/dset") 
 
 install(TARGETS dendroptimized_ext LIBRARY DESTINATION dendroptimized)
