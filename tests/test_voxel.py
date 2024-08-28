@@ -34,6 +34,7 @@ def test_connected():
     dbscan.fit(cloud_opti)
     print("count core ", len(dbscan.core_sample_indices_))
     print(len(np.unique(dbscan.labels_)))
+    print(dbscan.labels_)
     print(timeit.default_timer() - t)
 
 def fixture():

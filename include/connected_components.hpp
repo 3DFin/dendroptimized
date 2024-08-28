@@ -67,9 +67,8 @@ static VecIndex<int32_t> connected_components(RefCloud<real_t> xyz, const real_t
     {
         if (core_ok) ++count_core;
     }
-    std::cout << "count core " << count_core << std::endl;
-    DisjointSets uf(n_points);
 
+    DisjointSets uf(n_points);
     // TODO: union find (parallel disjoint set)
     auto link_core = taskflow.for_each_index(
         size_t(0), size_t(n_points), size_t(1),
@@ -90,9 +89,7 @@ static VecIndex<int32_t> connected_components(RefCloud<real_t> xyz, const real_t
             cluster_id[curr_id] = uf.find(curr_id);
         });
 
-    // label other nodes.
-    // TODO : in our config border points should not exists, we should only have core points and noise points
-    // it should be easier to check for border points in the previous step.
+    // label other nodes,
     auto label_border = taskflow.for_each_index(
         size_t(0), size_t(n_points), size_t(1),
         [&](size_t curr_id)
@@ -101,10 +98,16 @@ static VecIndex<int32_t> connected_components(RefCloud<real_t> xyz, const real_t
             {
                 for (const auto nn_id : nn_cells[curr_id])
                 {
+                    real_t min_dist = std::numeric_limits<real_t>::max();
+
                     if (is_core[nn_id])
                     {
-                        cluster_id[curr_id] = cluster_id[nn_id];
-                        break;
+                        real_t dist = (xyz.row(nn_id) - xyz.row(curr_id)).squaredNorm();
+                        if (dist < min_dist)
+                        {
+                            min_dist            = dist;
+                            cluster_id[curr_id] = cluster_id[nn_id];
+                        }
                     }
                 }
             }
