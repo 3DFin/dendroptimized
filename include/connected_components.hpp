@@ -27,7 +27,6 @@ static VecIndex<int32_t> connected_components(RefCloud<real_t> xyz, const real_t
     nn_cells.resize(n_points);
     std::vector<bool> is_core;
     is_core.resize(n_points);
-    uint32_t          count_core = 0;
     VecIndex<int32_t> cluster_id(n_points);
     cluster_id.fill(-1);
 
@@ -63,24 +62,20 @@ static VecIndex<int32_t> connected_components(RefCloud<real_t> xyz, const real_t
         tf::StaticPartitioner(0));
     executor.run(taskflow).get();
 
-    for (const auto core_ok : is_core)
-    {
-        if (core_ok) ++count_core;
-    }
-
+    // Link core with disjoint set
+    // no parallel since it does not seems to lower the runtime
     DisjointSets uf(n_points);
-    // TODO: union find (parallel disjoint set)
-    auto link_core = taskflow.for_each_index(
-        size_t(0), size_t(n_points), size_t(1),
-        [&](size_t curr_id)
+    for (size_t curr_id = 0; curr_id < n_points; ++curr_id)
+    {
+        if (!is_core[curr_id]) continue;
+        ;
+        for (const auto nn_id : nn_cells[curr_id])
         {
-            if (!is_core[curr_id]) return;
-            for (const auto nn_id : nn_cells[curr_id])
-            {
-                if (is_core[nn_id] && curr_id > nn_id && !uf.same(curr_id, nn_id)) { uf.unite(curr_id, nn_id); }
-            }
-        });
+            if (is_core[nn_id] && curr_id > nn_id && uf.find(curr_id) != uf.find(nn_id)) { uf.unite(curr_id, nn_id); }
+        }
+    };
 
+    // label core points in //
     auto label_core = taskflow.for_each_index(
         size_t(0), size_t(n_points), size_t(1),
         [&](size_t curr_id)
@@ -89,7 +84,8 @@ static VecIndex<int32_t> connected_components(RefCloud<real_t> xyz, const real_t
             cluster_id[curr_id] = uf.find(curr_id);
         });
 
-    // label other nodes,
+    // label other nodes as borders in //
+    // borders are attributed to their nearest cluster
     auto label_border = taskflow.for_each_index(
         size_t(0), size_t(n_points), size_t(1),
         [&](size_t curr_id)
@@ -112,12 +108,11 @@ static VecIndex<int32_t> connected_components(RefCloud<real_t> xyz, const real_t
                 }
             }
         });
-    label_core.succeed(link_core);
+
     label_border.succeed(label_core);
 
     executor.run(taskflow).get();
 
     return cluster_id;
-    // TODO make this parallel (do not forget to move the executor)
 }
 }  // namespace dendroptimized
