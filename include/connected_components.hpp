@@ -68,7 +68,7 @@ static VecIndex<int32_t> connected_components(RefCloud<real_t> xyz, const real_t
         if (core_ok) ++count_core;
     }
     std::cout << "count core " << count_core << std::endl;
-    DisjointSets uf(count_core);
+    DisjointSets uf(n_points);
 
     // TODO: union find (parallel disjoint set)
     auto link_core = taskflow.for_each_index(
