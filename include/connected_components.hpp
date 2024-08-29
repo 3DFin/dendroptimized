@@ -16,18 +16,18 @@ static VecIndex<int32_t> connected_components(RefCloud<real_t> xyz, const real_t
 {
     using kd_tree_t = nanoflann::KDTreeEigenMatrixAdaptor<RefCloud<real_t>, 3, nanoflann::metric_L2_Simple>;
 
-    kd_tree_t    kd_tree(3, xyz, 10);
+    // Parallel construction of kdtree index is enabled by default, but maybe we have to adapt this
+    // for small point clouds
+    kd_tree_t    kd_tree(3, xyz, 10, 0);
     const real_t sq_search_radius = eps * eps;
 
     const Eigen::Index n_points = xyz.rows();
 
     tf::Executor                           executor;
     tf::Taskflow                           taskflow;
-    std::vector<std::vector<Eigen::Index>> nn_cells;
-    nn_cells.resize(n_points);
-    std::vector<bool> is_core;
-    is_core.resize(n_points);
-    VecIndex<int32_t> cluster_id(n_points);
+    std::vector<std::vector<Eigen::Index>> nn_cells(n_points);
+    std::vector<bool>                      is_core(n_points);
+    VecIndex<int32_t>                      cluster_id(n_points);
     cluster_id.fill(-1);
 
     taskflow.for_each_index(
@@ -52,12 +52,11 @@ static VecIndex<int32_t> connected_components(RefCloud<real_t> xyz, const real_t
             is_core[point_id] = num_found >= min_samples;  // we include the core sample itself
             std::vector<Eigen::Index> nn_ids;
             nn_ids.reserve(num_found - 1);
-            for(const auto& result : result_set) {
-                if(result.first !=  point_id) {
-                    nn_ids.push_back(result.first);
-                }
+            for (const auto& result : result_set)
+            {
+                if (result.first != point_id) { nn_ids.push_back(result.first); }
             }
-            
+
             nn_cells[point_id] = std::move(nn_ids);
         },
         tf::StaticPartitioner(0));
