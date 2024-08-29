@@ -12,12 +12,12 @@ namespace dendroptimized
 {
 
 template <typename real_t>
-static VecIndex<int32_t> connected_components(RefCloud<real_t> xyz, const real_t eps_radius, const uint32_t min_samples)
+static VecIndex<int32_t> connected_components(RefCloud<real_t> xyz, const real_t eps, const uint32_t min_samples)
 {
     using kd_tree_t = nanoflann::KDTreeEigenMatrixAdaptor<RefCloud<real_t>, 3, nanoflann::metric_L2_Simple>;
 
     kd_tree_t    kd_tree(3, xyz, 10);
-    const real_t sq_search_radius = eps_radius * eps_radius;
+    const real_t sq_search_radius = eps * eps;
 
     const Eigen::Index n_points = xyz.rows();
 
@@ -51,12 +51,13 @@ static VecIndex<int32_t> connected_components(RefCloud<real_t> xyz, const real_t
 
             is_core[point_id] = num_found >= min_samples;  // we include the core sample itself
             std::vector<Eigen::Index> nn_ids;
-            std::transform(
-                result_set.begin(), result_set.end(), std::back_inserter(nn_ids),
-                [&](const auto& result)
-                {
-                    if (result.first != point_id) return result.first;
-                });
+            nn_ids.reserve(num_found - 1);
+            for(const auto& result : result_set) {
+                if(result.first !=  point_id) {
+                    nn_ids.push_back(result.first);
+                }
+            }
+            
             nn_cells[point_id] = std::move(nn_ids);
         },
         tf::StaticPartitioner(0));
