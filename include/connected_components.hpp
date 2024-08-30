@@ -6,6 +6,9 @@
 
 #include "types.hpp"
 
+#include <taskflow/algorithm/for_each.hpp>
+#include <taskflow/taskflow.hpp>
+
 namespace nb = nanobind;
 
 namespace dendroptimized

@@ -1,18 +1,24 @@
 
 # Dendroptimized
 
-Optimized C++ algorithms for dendromatics. 
-It relies on Eigen library for matrix and vector handling, and Taskflow for parallel primitives.
+## Optimized C++ algorithms for dendromatics. 
 
-Available algorithms:
+### Implementation and dependencies:
 
- - C++ voxelization
- 
+It relies on the Eigen library for matrix and vector operations, Taskflow for parallel processing primitives, nanoflann for nearest neighbor searches, and Wenzel Jakob’s DisjointSet for computing connected components. These libraries are vendored as submodules into the third_party directory.
+Binding are implemented via Nanobind.
+
+### Available algorithms:
+
+- Parallel drop in replacement for dendromatics voxelization
+- Ad hoc Parallel "reduced" DBSCAN (should only work in some Dendromatics specific contexts)
+
 To be added in a near future
- - C++ Parallel DBSCAN with voxelization prior
- - C++ Ad Hoc dist_axes computation
+- C++ Ad Hoc dist_axes computation
 
-## License
+## Installing Building
+
+Dendromptimized should be available on PyPI `pip install dendroptimized` should be enough but it is meant to be included into the dendomatics package
 
 ## Acknowledgement
 
