@@ -4,3 +4,9 @@
 [submodule "taskflow"]
 	path = third_party/taskflow
 	url = https://github.com/taskflow/taskflow
+[submodule "third_party/nanoflann"]
+	path = third_party/nanoflann
+	url = https://github.com/jlblancoc/nanoflann
+[submodule "third_party/dset"]
+	path = third_party/dset
+	url = https://github.com/wjakob/dset

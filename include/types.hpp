@@ -14,6 +14,9 @@ template <typename real_t>
 using PointCloud = Eigen::Matrix<real_t, Eigen::Dynamic, 3, Eigen::RowMajor>;
 
 template <typename real_t>
+using PointCloudAugmented = Eigen::Matrix<real_t, Eigen::Dynamic, 4, Eigen::RowMajor>;
+
+template <typename real_t>
 using RefCloud = Eigen::Ref<const PointCloud<real_t>>;
 
 template <typename real_t>
