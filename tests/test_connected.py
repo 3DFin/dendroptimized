@@ -1,11 +1,15 @@
-import numpy as np
 import math
+
+import numpy as np
 import pytest
-from dendroptimized import voxelize, connected_components
 from sklearn.cluster import DBSCAN
 
+from dendroptimized import connected_components, voxelize
+
+
 def test_connected():
-    xyz = np.random.rand(1_000_000, 3) * 100
+    rng = np.random.default_rng()
+    xyz = rng.uniform(0, 100, size=(10_000_000, 3))
     cloud_opti, _, _ = voxelize(xyz, 0.3, 0.3, 5, with_n_points=False)
     labels = connected_components(cloud_opti, 0.3 * math.sqrt(3) + 1e-6, 2)
 
@@ -16,8 +20,8 @@ def test_connected():
 
 
 def fixture():
-    np.random.seed(1)
-    xyz = np.random.uniform(0, 100, size=(5_000_000, 3))
+    rng = np.random.default_rng(seed=1)
+    xyz = rng.uniform(0, 100, size=(5_000_000, 3))
     cloud_opti, _, _ = voxelize(xyz, 0.3, 0.3, 5, with_n_points=False)
     return cloud_opti
 

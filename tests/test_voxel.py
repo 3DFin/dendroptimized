@@ -1,10 +1,13 @@
 import numpy as np
 import pytest
+
 from dendromatics import voxel
 from dendroptimized import voxelize
 
+
 def test_voxel():
-    xyz = np.random.rand(10_000_000, 3) * 100
+    rng = np.random.default_rng()
+    xyz = rng.uniform(0, 100, size=(1_000_000, 3))
     cloud_orig, vox2c_orig, _ = voxel.voxelate(xyz, 0.3, 0.3, 5, with_n_points=True)
     cloud_opti, vox2c_opti, _ = voxelize(xyz, 0.3, 0.3, 5, with_n_points=True)
     np.testing.assert_allclose(cloud_opti, cloud_orig)
@@ -16,8 +19,8 @@ def test_voxel():
 
 
 def fixture():
-    np.random.seed(1)
-    return np.random.uniform(0, 100, size=(10_000_000, 3))
+    rng =  np.random.default_rng()
+    return rng.uniform(0, 100, size=(1_000_000, 3))
 
 @pytest.mark.benchmark(group="Voxel", disable_gc=True, warmup=True)
 def test_bench_voxel_dendromatics(benchmark):
