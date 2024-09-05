@@ -4,7 +4,7 @@ build-backend = "scikit_build_core.build"
 
 [project]
 name = "dendroptimized"
-version = "0.0.1"
+version = "0.1.0"
 readme = "README.md"
 description = "Optimized C++ algorithms for dendromatics"
 requires-python = ">=3.9,<3.13"
