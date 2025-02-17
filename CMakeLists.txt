@@ -16,7 +16,11 @@ list(APPEND CMAKE_PREFIX_PATH "${NB_DIR}")
 find_package(nanobind CONFIG REQUIRED)
 find_package(Threads REQUIRED)
 
-nanobind_add_module(dendroptimized_ext NOMINSIZE PROTECT_STACK src/dendroptimized_ext.cpp)
+if(MSVC)
+  set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+endif()
+
+nanobind_add_module(dendroptimized_ext NOMINSIZE STABLE_ABI LTO src/dendroptimized_ext.cpp)
 
 target_link_libraries(dendroptimized_ext PRIVATE Threads::Threads)
 
