@@ -12,13 +12,13 @@ execute_process(
   COMMAND "${Python_EXECUTABLE}" -m nanobind --cmake_dir
   OUTPUT_STRIP_TRAILING_WHITESPACE OUTPUT_VARIABLE NB_DIR)
 list(APPEND CMAKE_PREFIX_PATH "${NB_DIR}")
+
 find_package(nanobind CONFIG REQUIRED)
+find_package(Threads REQUIRED)
 
 nanobind_add_module(dendroptimized_ext NOMINSIZE STABLE_ABI LTO src/dendroptimized_ext.cpp)
 
-# for nanobind 2
-# nanobind_add_stub(
-# )
+target_link_libraries(dendroptimized_ext PRIVATE Threads::Threads)
 
 # All libs are header only. 
 # it's faster to include like this than using exported targets 
