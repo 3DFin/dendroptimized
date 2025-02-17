@@ -20,7 +20,7 @@ if(MSVC)
   set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 endif()
 
-nanobind_add_module(dendroptimized_ext NOMINSIZE STABLE_ABI LTO src/dendroptimized_ext.cpp)
+nanobind_add_module(dendroptimized_ext NOMINSIZE STABLE_ABI src/dendroptimized_ext.cpp)
 
 target_link_libraries(dendroptimized_ext PRIVATE Threads::Threads)
 
