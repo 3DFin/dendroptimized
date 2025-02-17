@@ -4,23 +4,23 @@ build-backend = "scikit_build_core.build"
 
 [project]
 name = "dendroptimized"
-version = "0.2.0"
+version = "0.2.1"
 readme = "README.md"
 description = "Optimized C++ algorithms for dendromatics"
 requires-python = ">=3.9,<3.14"
 license = { file = "LICENSE" }
 authors = [
-  { name = "Carlos Cabo", email = "carloscabo@uniovi.es" },
-  { name = "Diego Laino", email = "diegolainor@gmail.com" },
+    { name = "Carlos Cabo", email = "carloscabo@uniovi.es" },
+    { name = "Diego Laino", email = "diegolainor@gmail.com" },
 ]
 keywords = ["dendromatics", "point clouds", "3D", "LiDAR"]
 classifiers = [
-  "Development Status :: 3 - Alpha",
-  "Programming Language :: Python",
-  "Topic :: Scientific/Engineering",
+    "Development Status :: 3 - Alpha",
+    "Programming Language :: Python",
+    "Topic :: Scientific/Engineering",
 ]
 dependencies = [
-  "numpy >= 1.7"
+    "numpy >= 1.25", # NEP 29
 ]
 
 [tool.scikit-build]
@@ -34,16 +34,16 @@ cmake.build-type = "Release"
 # make sdist a lot lighter by removing some useless files from third_party
 # ⚠️  be sure to keep copyrights and license file
 sdist.exclude = [
-  "third_party/eigen/bench",
-  "third_party/eigen/demos",
-  "third_party/eigen/doc",
-  "third_party/taskflow/3rd-party",
-  "third_party/taskflow/benchmarks",
-  "third_party/taskflow/docs",
-  "third_party/taskflow/doxygen",
-  "third_party/taskflow/examples",
-  "third_party/taskflow/sandbox",
-  "third_party/taskflow/unittests",
+    "third_party/eigen/bench",
+    "third_party/eigen/demos",
+    "third_party/eigen/doc",
+    "third_party/taskflow/3rd-party",
+    "third_party/taskflow/benchmarks",
+    "third_party/taskflow/docs",
+    "third_party/taskflow/doxygen",
+    "third_party/taskflow/examples",
+    "third_party/taskflow/sandbox",
+    "third_party/taskflow/unittests",
 ]
 
 [tool.ruff]
@@ -53,20 +53,20 @@ line-length = 120
 [tool.ruff.lint]
 # TODO Add D, PTH, RET, disabled for now as they collides with intial choices
 select = ["E", "W", "YTT", "NPY", "PYI", "Q", "F", "B", "I", "SIM", "RUF"]
-# TODO: for now we ignore "Line too long error (E501)" 
+# TODO: for now we ignore "Line too long error (E501)"
 # because our comments are too longs
 # code formatting will take care of the line length in code anyway
 ignore = [
-  "E501",
-  # Ignore docstring in public package and module
-  "D100",
-  "D104",
-  # Blank line before class
-  "D203",
-  # multiline summary second line
-  "D213",
-  # yoda conditions
-  "SIM300",
+    "E501",
+    # Ignore docstring in public package and module
+    "D100",
+    "D104",
+    # Blank line before class
+    "D203",
+    # multiline summary second line
+    "D213",
+    # yoda conditions
+    "SIM300",
 ]
 
 [tool.ruff.lint.isort]
@@ -102,7 +102,7 @@ repository = "https://github.com/3DFin/dendroptimized"
 
 [tool.cibuildwheel]
 build = "cp3{9,10,11,12,13}-*"
-archs = ["auto64"]          # limit to 64bits builds
+archs = ["auto64"]             # limit to 64bits builds
 
 # Needed for full C++17 support
 [tool.cibuildwheel.macos.environment]
