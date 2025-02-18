@@ -12,21 +12,32 @@ execute_process(
   COMMAND "${Python_EXECUTABLE}" -m nanobind --cmake_dir
   OUTPUT_STRIP_TRAILING_WHITESPACE OUTPUT_VARIABLE NB_DIR)
 list(APPEND CMAKE_PREFIX_PATH "${NB_DIR}")
+
 find_package(nanobind CONFIG REQUIRED)
+find_package(Threads REQUIRED)
 
-nanobind_add_module(dendroptimized_ext NOMINSIZE STABLE_ABI LTO src/dendroptimized_ext.cpp)
+if(MSVC)
+  # Static link MSVC rt for maximum compatibility
+  # It avoid to mess with embedded MSVC rt from other packages (see PyQT5)
+  set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+  # Same, enabling LTO (LTGC for MS) give less ABI compatibility, so we dissable it.
+  # see https://learn.microsoft.com/en-us/cpp/porting/binary-compat-2015-2017?view=msvc-170
+  # for more details.
+  nanobind_add_module(dendroptimized_ext NOMINSIZE STABLE_ABI src/dendroptimized_ext.cpp)
+else()
+  # we enable LTO on Linux and MacOS.
+  nanobind_add_module(dendroptimized_ext NOMINSIZE LTO STABLE_ABI src/dendroptimized_ext.cpp)
+endif()
 
-# for nanobind 2
-# nanobind_add_stub(
-# )
+target_link_libraries(dendroptimized_ext PRIVATE Threads::Threads)
 
-# All libs are header only. 
-# it's faster to include like this than using exported targets 
+# All libs are header only.
+# it's faster to include like this than using exported targets
 # (i.e add_subdirectories(...))
-target_include_directories(dendroptimized_ext PRIVATE "include" 
-  "third_party/eigen" 
-  "third_party/taskflow" 
-  "third_party/nanoflann/include" 
-  "third_party/dset") 
+target_include_directories(dendroptimized_ext PRIVATE "include"
+  "third_party/eigen"
+  "third_party/taskflow"
+  "third_party/nanoflann/include"
+  "third_party/dset")
 
 install(TARGETS dendroptimized_ext LIBRARY DESTINATION dendroptimized)
