@@ -29,7 +29,7 @@ static VecIndex<int32_t> connected_components(RefCloud<real_t> xyz, const real_t
     tf::Executor                           executor;
     tf::Taskflow                           taskflow;
     std::vector<std::vector<Eigen::Index>> nn_cells(n_points);
-    std::vector<bool>                      is_core(n_points);
+    std::vector<bool>                      is_core(n_points, false);
     VecIndex<int32_t>                      cluster_id(n_points);
     cluster_id.fill(-1);
 
@@ -71,7 +71,6 @@ static VecIndex<int32_t> connected_components(RefCloud<real_t> xyz, const real_t
     for (size_t curr_id = 0; curr_id < n_points; ++curr_id)
     {
         if (!is_core[curr_id]) continue;
-        ;
         for (const auto nn_id : nn_cells[curr_id])
         {
             if (is_core[nn_id] && curr_id > nn_id && uf.find(curr_id) != uf.find(nn_id)) { uf.unite(curr_id, nn_id); }
@@ -95,10 +94,9 @@ static VecIndex<int32_t> connected_components(RefCloud<real_t> xyz, const real_t
         {
             if (!is_core[curr_id])
             {
+                real_t min_dist = std::numeric_limits<real_t>::max();
                 for (const auto nn_id : nn_cells[curr_id])
                 {
-                    real_t min_dist = std::numeric_limits<real_t>::max();
-
                     if (is_core[nn_id])
                     {
                         real_t dist = (xyz.row(nn_id) - xyz.row(curr_id)).squaredNorm();
