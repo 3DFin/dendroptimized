@@ -62,11 +62,11 @@ static std::tuple<PointCloud<real_t>, VecIndex<uint32_t>, VecIndex<uint32_t>> vo
     const Vec3<real_t> min_vec(min_x, min_y, min_z);
 
     // Lambda to compute voxel hashing
-    const auto create_hash = [&](const Vec3<real_t>& point) -> uint64_t
+    const auto create_hash = [&](const Eigen::RowVector<real_t, -1>& point) -> uint64_t
     {
-        return ((static_cast<uint64_t>(std::floor((point(id_z) - min_vec(id_z)) / res_z)) << two_voxel_bits) |
-                (static_cast<uint64_t>(std::floor((point(id_y) - min_vec(id_y)) / res_xy)) << voxel_bits)) |
-               static_cast<uint64_t>(std::floor((point(id_x) - min_vec(id_x)) / res_xy));
+        return ((static_cast<uint64_t>(std::floor((point(id_z) - min_vec(2)) / res_z)) << two_voxel_bits) |
+                (static_cast<uint64_t>(std::floor((point(id_y) - min_vec(1)) / res_xy)) << voxel_bits)) |
+               static_cast<uint64_t>(std::floor((point(id_x) - min_vec(0)) / res_xy));
     };
 
     std::vector<uint64_t> hashes(num_points);
