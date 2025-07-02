@@ -71,6 +71,7 @@ ignore = [
 
 [tool.ruff.lint.isort]
 known-first-party = ["dendromatics"]
+
 [tool.tox]
 legacy_tox_ini = """
 [tox]

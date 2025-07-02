@@ -5,6 +5,7 @@
 #include <nanobind/stl/variant.h>
 #include <nanobind/stl/vector.h>
 
+#include "circle_fit.hpp"
 #include "connected_components.hpp"
 #include "voxel.hpp"
 
@@ -22,7 +23,7 @@ NB_MODULE(dendroptimized_ext, m)
         also allows to revert the process, by creating a unique code for each point
         in the point cloud, thus voxelated cloud can be seamlessly reverted to the
         original point cloud.
-        
+
         Parameters
         ----------
         xyz : numpy.ndarray
@@ -60,22 +61,23 @@ NB_MODULE(dendroptimized_ext, m)
             cloud to the voxelated cloud.
         )");
     m.def(
-        "connected_components", &dendroptimized::connected_components<double>, "xyz"_a.noconvert(), "eps"_a, "min_samples"_a = 2, R"(
+        "connected_components", &dendroptimized::connected_components<double>, "xyz"_a.noconvert(), "eps"_a,
+        "min_samples"_a = 2, R"(
         Simplified DBSCAN implementation.
-        The cloud is intended to be a voxelized point cloud with isotropic resolution across all three dimensions. 
-        The eps parameter should be set to the radius of a sphere enclosing a voxel (i.e., voxel side length x sqrt(3)). 
-        Neighborhoods are initially computed in parallel using a KD-tree acceleration structure. 
-        Core points (with a neighborhood size >= min_samples) are then connected using an efficient Union-Find algorithm. 
+        The cloud is intended to be a voxelized point cloud with isotropic resolution across all three dimensions.
+        The eps parameter should be set to the radius of a sphere enclosing a voxel (i.e., voxel side length x sqrt(3)).
+        Neighborhoods are initially computed in parallel using a KD-tree acceleration structure.
+        Core points (with a neighborhood size >= min_samples) are then connected using an efficient Union-Find algorithm.
         Finally, border points are linked to their nearest cluster.
 
-        like sklearn dbscan implementation, the query point itself is part of the set of samples. 
+        Like sklearn dbscan implementation, the query point itself is part of the set of samples.
         the overall implementation should be faster and use less memory than sklearn alternative
 
         Parameters
         ----------
         xyz : numpy.ndarray
-            The point cloud to be voxelated. It is expected to have X, Y, Z fields.
-            3D or higher array containing data with `float` type.
+            The point cloud to be voxelated. It is expected to have X, Y, Z fields
+            with `float` type.
         eps : float
             radius of the sphere used to define de neighborhood.
         min_samples : int
@@ -84,8 +86,32 @@ NB_MODULE(dendroptimized_ext, m)
         Returns
         -------
         cluster_labels : numpy.ndarray
-            A vector with a length equal to the number of points, where each element contains 
-            the ID of the cluster the point belongs to. 
+            A vector with a length equal to the number of points, where each element contains
+            the ID of the cluster the point belongs to.
             A value of ‘-1’ indicates that the point is considered to be noise.
+        )");
+    m.def("circle_fit", &dendroptimized::LMCircleFit<double>, "xy"_a.noconvert(), R"(
+            Geometric Circle fit Using Levenberg-Marquardt
+
+            This implementation performs a geometric circle fit using the LM algorithm,
+            initialized with the centroid of the point cloud.
+            It leverages `NonLinearOptimization` module of Eigen Lib, which is based on MINPACK like
+            least_squares of scikit-learn so result should very closely match that of scikit-learn.
+            Note: this won't provide any noticeable perfomance gains, it is for a PoC of full conversion to C++.
+
+            Parameters
+            ----------
+            xyz : numpy.ndarray
+                The point cloud to be fitted as a Nx2 array with `float` type. where N>=3.
+
+            Returns
+            -------
+            circle_params : numpy.ndarray
+                A numpy vector with 3 entries (x_c, y_c, r)
+
+            Raises
+            ------
+            ValueError
+                if N<3
         )");
 }

@@ -7,9 +7,6 @@
 #include <nanobind/stl/variant.h>
 
 #include <Eigen/Dense>
-#include <chrono>
-#include <cstdint>
-#include <iostream>
 #include <taskflow/algorithm/for_each.hpp>
 #include <taskflow/algorithm/scan.hpp>
 #include <taskflow/algorithm/sort.hpp>
@@ -23,14 +20,14 @@ namespace dendroptimized
 
 // low level version with Taskflow
 template <typename real_t>
-static std::tuple<PointCloud<real_t>, VecIndex<uint32_t>, VecIndex<uint32_t>> voxelize(
+static std::tuple<PointCloud3<real_t>, VecIndex<uint32_t>, VecIndex<uint32_t>> voxelize(
     DRefMatrixCloud<real_t> xyz, const real_t res_xy, const real_t res_z, const uint32_t id_x, const uint32_t id_y,
     const uint32_t id_z, const bool verbose)
 {
     // number of bit used to encode one dimension
     constexpr uint64_t voxel_bits     = 21;
     constexpr uint64_t two_voxel_bits = 42;
-    constexpr uint64_t num_cells      = 2097151;  // 2^21 -1 TODO: make this an exception if we need more
+    constexpr uint64_t num_cells = 2'097'151;  // 2^21 -1 TODO: make this an exception if we need more in one dimension
 
     // The coordinate minima
     const auto start_total = std::chrono::high_resolution_clock::now();
@@ -71,7 +68,7 @@ static std::tuple<PointCloud<real_t>, VecIndex<uint32_t>, VecIndex<uint32_t>> vo
 
     std::vector<uint64_t> hashes(num_points);
     VecIndex<uint32_t>    cloud_to_vox_ind(num_points);
-    PointCloud<real_t>    vox_pc;
+    PointCloud3<real_t>   vox_pc;
     VecIndex<uint32_t>    vox_to_cloud_ind;
 
     std::vector<uint32_t> first_point_in_vox(num_points, 0);
@@ -140,7 +137,7 @@ static std::tuple<PointCloud<real_t>, VecIndex<uint32_t>, VecIndex<uint32_t>> vo
     auto allocate = tf.emplace(
         [&]()
         {
-            vox_pc           = PointCloud<real_t>(first_point_in_vox.back(), 3);
+            vox_pc           = PointCloud3<real_t>(first_point_in_vox.back(), 3);
             vox_to_cloud_ind = VecIndex<uint32_t>(first_point_in_vox.back());
         });
 
@@ -222,7 +219,7 @@ static std::tuple<PointCloud<real_t>, VecIndex<uint32_t>, VecIndex<uint32_t>> vo
 
 template <typename real_t>
 static std::variant<
-    std::tuple<PointCloud<real_t>, VecIndex<uint32_t>, VecIndex<uint32_t>>,
+    std::tuple<PointCloud3<real_t>, VecIndex<uint32_t>, VecIndex<uint32_t>>,
     std::tuple<PointCloudAugmented<real_t>, VecIndex<uint32_t>, VecIndex<uint32_t>>>
     voxelize_wrapper(
         DRefMatrixCloud<real_t> xyz, const real_t res_xy, const real_t res_z, const uint32_t n_digits, uint32_t id_x,

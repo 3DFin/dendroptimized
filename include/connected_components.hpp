@@ -3,11 +3,10 @@
 #include <dset.h>
 
 #include <nanoflann.hpp>
-
-#include "types.hpp"
-
 #include <taskflow/algorithm/for_each.hpp>
 #include <taskflow/taskflow.hpp>
+
+#include "types.hpp"
 
 namespace nb = nanobind;
 
@@ -15,9 +14,9 @@ namespace dendroptimized
 {
 
 template <typename real_t>
-static VecIndex<int32_t> connected_components(RefCloud<real_t> xyz, const real_t eps, const uint32_t min_samples)
+static VecIndex<int32_t> connected_components(RefCloud3<real_t> xyz, const real_t eps, const uint32_t min_samples)
 {
-    using kd_tree_t = nanoflann::KDTreeEigenMatrixAdaptor<RefCloud<real_t>, 3, nanoflann::metric_L2_Simple>;
+    using kd_tree_t = nanoflann::KDTreeEigenMatrixAdaptor<RefCloud3<real_t>, 3, nanoflann::metric_L2_Simple>;
 
     // Parallel construction of kdtree index is enabled by default, but maybe we have to adapt this
     // for small point clouds
