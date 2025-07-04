@@ -30,8 +30,8 @@ def generate_circle_points(center=(0, 0), radius=1.0, n_points=50, noise=0.0):
     y = center[1] + radius * np.sin(angles)
 
     if noise > 0:
-        x += rng.normal(0, noise, size=num_points)
-        y += rng.normal(0, noise, size=num_points)
+        x += rng.normal(0, noise, size=n_points)
+        y += rng.normal(0, noise, size=n_points)
 
     return np.column_stack((x, y))
 

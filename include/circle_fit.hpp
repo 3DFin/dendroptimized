@@ -22,12 +22,7 @@ struct EigenCircleFitFunctor
         const real_t a = x(0);  // TODO cache computation
         const real_t b = x(1);
         const real_t r = x(2);
-        for (Eigen::Index i = 0; i < data.rows(); ++i)
-        {
-            const real_t dx = data(i, 0) - a;
-            const real_t dy = data(i, 1) - b;
-            fvec(i)         = std::sqrt(dx * dx + dy * dy) - r;
-        }
+        for (Eigen::Index i = 0; i < data.rows(); ++i) { fvec(i) = std::hypot(data(i, 0) - a, data(i, 1) - b) - r; }
         return 0;
     }
 
@@ -42,7 +37,7 @@ struct EigenCircleFitFunctor
             // TODO cache computation
             const real_t dx = data(i, 0) - a;
             const real_t dy = data(i, 1) - b;
-            const real_t d  = std::sqrt(dx * dx + dy * dy);
+            const real_t d  = std::hypot(dx, dy);
 
             if (d < real_t(1e-10))  // add robustness (avoid division by zero)
             {
@@ -83,8 +78,9 @@ Eigen::Vector3<real_t> LMCircleFit(RefCloud2<real_t> xy)
     lm.parameters.maxfev = 100;
     lm.parameters.xtol   = 1.4e-8;
 
-    int status = lm.minimize(x0); //TODO: check status
+    int status = lm.minimize(x0);  // TODO: check status
     return {Eigen::Vector3<real_t>(x0(0), x0(1), x0(2))};
 }
+
 
 }  // namespace dendroptimized
