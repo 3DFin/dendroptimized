@@ -65,7 +65,7 @@ static VecIndex<int32_t> connected_components(RefCloud3<real_t> xyz, const real_
     executor.run(taskflow).get();
 
     // Link core with disjoint set
-    // no parallel since it does not seems to lower the runtime
+    // no parallel since it does not seems to improve the runtime
     DisjointSets uf(n_points);
     for (size_t curr_id = 0; curr_id < n_points; ++curr_id)
     {
@@ -115,4 +115,5 @@ static VecIndex<int32_t> connected_components(RefCloud3<real_t> xyz, const real_
 
     return cluster_id;
 }
+
 }  // namespace dendroptimized

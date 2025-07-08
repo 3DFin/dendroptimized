@@ -1,1 +1,1 @@
-from .dendroptimized_ext import voxelize, connected_components, circle_fit
+from .dendroptimized_ext import voxelize, connected_components, circle_fit, fcluster

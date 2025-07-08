@@ -7,6 +7,7 @@
 
 #include "circle_fit.hpp"
 #include "connected_components.hpp"
+#include "slink.hpp"
 #include "voxel.hpp"
 
 namespace nb = nanobind;
@@ -94,9 +95,9 @@ NB_MODULE(dendroptimized_ext, m)
             Geometric Circle fit Using Levenberg-Marquardt
 
             This implementation performs a geometric circle fit using the LM algorithm,
-            initialized with the centroid of the point cloud.
+            initialized with the Algebraic Taubin fit.
             It leverages `NonLinearOptimization` module of Eigen Lib, which is based on MINPACK like
-            least_squares of scikit-learn so result should very closely match that of scikit-learn.
+           `least_squares` function of scikit-learn so result should very closely match that of scikit-learn.
             Note: this won't provide any noticeable perfomance gains, it is for a PoC of full conversion to C++.
 
             Parameters
@@ -113,5 +114,8 @@ NB_MODULE(dendroptimized_ext, m)
             ------
             ValueError
                 if N<3
+        )");
+
+    m.def("fcluster", &dendroptimized::fcluster_slink<double>, "xy"_a.noconvert(), "threshold"_a, R"(
         )");
 }
