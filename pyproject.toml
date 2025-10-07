@@ -1,13 +1,13 @@
 [build-system]
-requires = ["scikit-build-core ~= 0.11.0", "nanobind  ~= 2.7.0"]
+requires = ["scikit-build-core ~= 0.11.0", "nanobind  ~= 2.9.0"]
 build-backend = "scikit_build_core.build"
 
 [project]
 name = "dendroptimized"
-version = "0.2.2"
+version = "0.3.0"
 readme = "README.md"
 description = "Optimized C++ algorithms for dendromatics"
-requires-python = ">=3.9,<3.14"
+requires-python = ">=3.9,<3.15"
 license = { file = "LICENSE" }
 authors = [
     { name = "Carlos Cabo", email = "carloscabo@uniovi.es" },
@@ -32,7 +32,7 @@ cmake.build-type = "Release"
 
 
 # make sdist a lot lighter by removing some useless files from third_party
-# ⚠️  be sure to keep copyrights and license file
+# ⚠️ be sure to keep copyrights and license file
 sdist.exclude = [
     "third_party/eigen/bench",
     "third_party/eigen/demos",
@@ -81,8 +81,7 @@ python =
     3.10: py310
     3.11: py311
     3.12: py312
-    3.13: py313
-
+    3.13: py314
 
 [testenv]
 changedir = tests
@@ -101,7 +100,7 @@ homepage = "https://github.com/3DFin/dendroptimized"
 repository = "https://github.com/3DFin/dendroptimized"
 
 [tool.cibuildwheel]
-build = "cp3{9,10,11,12,13}-*"
+build = "cp3{9,10,11,12,13,14}-*"
 archs = ["auto64"]             # limit to 64bits builds
 
 # Needed for full C++17 support
